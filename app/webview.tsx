@@ -1,0 +1,297 @@
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+import { useLocalSearchParams, router } from 'expo-router';
+import { 
+  ArrowLeft, 
+  RotateCcw, 
+  Share, 
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight 
+} from 'lucide-react-native';
+
+export default function WebViewScreen() {
+  const { url, title, websiteId } = useLocalSearchParams<{
+    url: string;
+    title: string;
+    websiteId: string;
+  }>();
+
+  const webViewRef = useRef<WebView>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoForward, setCanGoForward] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState(url);
+
+  const handleRefresh = () => {
+    webViewRef.current?.reload();
+    setError(false);
+  };
+
+  const handleGoBack = () => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+    }
+  };
+
+  const handleGoForward = () => {
+    if (canGoForward) {
+      webViewRef.current?.goForward();
+    }
+  };
+
+  const handleShare = () => {
+    Alert.alert(
+      'Share Website',
+      `Share ${title}`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Copy URL', onPress: () => {
+          // Could implement clipboard functionality here
+          Alert.alert('Success', 'URL copied to clipboard');
+        }},
+      ]
+    );
+  };
+
+  const handleOpenExternal = () => {
+    Alert.alert(
+      'Open Externally',
+      'This will open the website in your default browser.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Open', onPress: () => {
+          // Could implement external browser opening here
+        }},
+      ]
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={() => router.back()}
+        >
+          <ArrowLeft color="#374151" size={24} />
+        </TouchableOpacity>
+        
+        <View style={styles.titleContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.url} numberOfLines={1}>
+            {currentUrl}
+          </Text>
+        </View>
+
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleShare}>
+            <Share color="#374151" size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerButton} onPress={handleOpenExternal}>
+            <ExternalLink color="#374151" size={20} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.navigationBar}>
+        <TouchableOpacity
+          style={[styles.navButton, !canGoBack && styles.navButtonDisabled]}
+          onPress={handleGoBack}
+          disabled={!canGoBack}
+        >
+          <ChevronLeft color={canGoBack ? "#3b82f6" : "#d1d5db"} size={24} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navButton, !canGoForward && styles.navButtonDisabled]}
+          onPress={handleGoForward}
+          disabled={!canGoForward}
+        >
+          <ChevronRight color={canGoForward ? "#3b82f6" : "#d1d5db"} size={24} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navButton} onPress={handleRefresh}>
+          <RotateCcw color="#3b82f6" size={20} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.webViewContainer}>
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorTitle}>Unable to load website</Text>
+            <Text style={styles.errorDescription}>
+              Check your internet connection and try again.
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+              <RotateCcw color="#ffffff" size={20} />
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <WebView
+            ref={webViewRef}
+            source={{ uri: url }}
+            style={styles.webView}
+            onLoadStart={() => setLoading(true)}
+            onLoadEnd={() => setLoading(false)}
+            onError={() => {
+              setError(true);
+              setLoading(false);
+            }}
+            onNavigationStateChange={(navState) => {
+              setCanGoBack(navState.canGoBack);
+              setCanGoForward(navState.canGoForward);
+              setCurrentUrl(navState.url);
+            }}
+            allowsBackForwardNavigationGestures={true}
+            decelerationRate={0.998}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#3b82f6" />
+                <Text style={styles.loadingText}>Loading {title}...</Text>
+              </View>
+            )}
+          />
+        )}
+      </View>
+
+      {loading && !error && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  headerButton: {
+    padding: 8,
+  },
+  titleContainer: {
+    flex: 1,
+    marginHorizontal: 16,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  url: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+  },
+  navigationBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f9fafb',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  navButton: {
+    padding: 8,
+    marginRight: 16,
+  },
+  navButtonDisabled: {
+    opacity: 0.5,
+  },
+  webViewContainer: {
+    flex: 1,
+  },
+  webView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  errorDescription: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+});
