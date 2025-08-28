@@ -162,83 +162,38 @@ export default function WebViewScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-  <WebView
+<WebView
   ref={webViewRef}
   source={{ uri: url }}
   style={styles.webView}
-  onLoadStart={() => setLoading(true)}
-  onLoadEnd={() => setLoading(false)}
-  onError={() => {
-    setError(true);
-    setLoading(false);
-  }}
-  onNavigationStateChange={(navState) => {
-    setCanGoBack(navState.canGoBack);
-    setCanGoForward(navState.canGoForward);
-    setCurrentUrl(navState.url);
-  }}
-  allowsBackForwardNavigationGestures={true}
-  decelerationRate={0.998}
-  showsHorizontalScrollIndicator={false}
-  showsVerticalScrollIndicator={false}
-  startInLoadingState={true}
-  renderLoading={() => (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#3b82f6" />
-      <Text style={styles.loadingText}>Loading {title}...</Text>
-    </View>
-  )}
-
-  mediaPlaybackRequiresUserAction={false}
-  allowsInlineMediaPlayback={true}
   javaScriptEnabled={true}
   domStorageEnabled={true}
-  originWhitelist={['*']}
-  allowFileAccess={true}
-  allowUniversalAccessFromFileURLs={true}
-  geolocationEnabled={true} 
-
-  /** 👇 Inject geolocation polyfill */
-  injectedJavaScript={`
-    (function() {
-      navigator.geolocation.getCurrentPosition = function(success, error) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "getLocation" }));
-        window._geoSuccess = success;
-        window._geoError = error;
-      };
-    })();
-    true;
-  `}
-
-  /** 👇 Listen for messages back from RN */
+  geolocationEnabled={true}
+  injectedJavaScript={injectedJS}
   onMessage={async (event) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === "getLocation") {
+      if (data.type === "getLocation" || data.type === "watchLocation") {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === "granted") {
-          const loc = await Location.getCurrentPositionAsync({});
+        if (status !== "granted") {
           webViewRef.current?.injectJavaScript(`
-            if (window._geoSuccess) {
-              window._geoSuccess({
-                coords: {
-                  latitude: ${loc.coords.latitude},
-                  longitude: ${loc.coords.longitude},
-                  accuracy: ${loc.coords.accuracy}
-                }
-              });
-            }
+            window.__onLocationError && window.__onLocationError({ code: 1, message: "Permission denied" });
           `);
-        } else {
-          webViewRef.current?.injectJavaScript(`
-            if (window._geoError) {
-              window._geoError({ code: 1, message: "Permission denied" });
-            }
-          `);
+          return;
         }
+        const loc = await Location.getCurrentPositionAsync({});
+        webViewRef.current?.injectJavaScript(`
+          window.__onLocationSuccess && window.__onLocationSuccess({
+            coords: {
+              latitude: ${loc.coords.latitude},
+              longitude: ${loc.coords.longitude},
+              accuracy: ${loc.coords.accuracy}
+            }
+          });
+        `);
       }
     } catch (e) {
-      console.log("onMessage parse error:", e);
+      console.warn("WebView message error:", e);
     }
   }}
 />
