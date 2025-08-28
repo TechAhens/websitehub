@@ -20,6 +20,27 @@ import {
 } from 'lucide-react-native';
 import * as Camera from 'expo-camera';
 import * as Location from 'expo-location';
+const injectedJS = `
+  (function() {
+    window.navigator.geolocation.getCurrentPosition = function(success, error) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: "getLocation" }));
+      window.__onLocationSuccess = success;
+      window.__onLocationError = error;
+    };
+
+    window.navigator.geolocation.watchPosition = function(success, error) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: "watchLocation" }));
+      window.__onLocationSuccess = success;
+      window.__onLocationError = error;
+      return 1; // dummy watchId
+    };
+
+    window.navigator.geolocation.clearWatch = function(id) {
+      // no-op for now
+    };
+  })();
+  true; // required for Android
+`;
 
 export default function WebViewScreen() {
   const { url, title, websiteId } = useLocalSearchParams<{
