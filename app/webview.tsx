@@ -86,7 +86,7 @@ export default function WebViewScreen() {
         >
           <ArrowLeft color="#374151" size={24} />
         </TouchableOpacity>
-         <View style={{ height: 4 }} />  
+         <View style={{ height: 4 }} />  {}
         <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={1}>
             {title}
