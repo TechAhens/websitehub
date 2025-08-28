@@ -19,7 +19,6 @@ import {
   ChevronRight 
 } from 'lucide-react-native';
 import * as Camera from 'expo-camera';
-
 import * as Location from 'expo-location';
 
 export default function WebViewScreen() {
