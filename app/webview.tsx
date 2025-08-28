@@ -88,9 +88,12 @@ export default function WebViewScreen() {
         </TouchableOpacity>
           <View style={{ height: 4 }} />  {/* 👈 tiny spacer above text */}
         <View style={styles.titleContainer}>
-          {/* <Text style={styles.title} numberOfLines={1}>
+    <Text style={styles.title} numberOfLines={1}>
+            {}
+          </Text>
+          <Text style={styles.title} numberOfLines={1}>
             {title}
-          </Text> */}
+          </Text>
           <Text style={styles.url} numberOfLines={1}>
             {currentUrl}
           </Text>
