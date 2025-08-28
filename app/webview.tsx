@@ -86,11 +86,11 @@ export default function WebViewScreen() {
         >
           <ArrowLeft color="#374151" size={24} />
         </TouchableOpacity>
-         <View style={{ height: 4 }} />  {}
+          <View style={{ height: 4 }} />  {/* 👈 tiny spacer above text */}
         <View style={styles.titleContainer}>
-          <Text style={styles.title} numberOfLines={1}>
+          {/* <Text style={styles.title} numberOfLines={1}>
             {title}
-          </Text>
+          </Text> */}
           <Text style={styles.url} numberOfLines={1}>
             {currentUrl}
           </Text>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-     alignItems: 'flex-start',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -197,12 +197,10 @@ const styles = StyleSheet.create({
   titleContainer: {
     flex: 1,
     marginHorizontal: 16,
-     marginTop: 4, 
   },
   title: {
     fontSize: 16,
     fontWeight: '600' as const,
-    
   },
   url: {
     fontSize: 12,
