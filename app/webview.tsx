@@ -162,33 +162,48 @@ export default function WebViewScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <WebView
-            ref={webViewRef}
-            source={{ uri: url }}
-            style={styles.webView}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
-            onError={() => {
-              setError(true);
-              setLoading(false);
-            }}
-            onNavigationStateChange={(navState) => {
-              setCanGoBack(navState.canGoBack);
-              setCanGoForward(navState.canGoForward);
-              setCurrentUrl(navState.url);
-            }}
-            allowsBackForwardNavigationGestures={true}
-            decelerationRate={0.998}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            startInLoadingState={true}
-            renderLoading={() => (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#3b82f6" />
-                <Text style={styles.loadingText}>Loading {title}...</Text>
-              </View>
-            )}
-          />
+    <WebView
+  ref={webViewRef}
+  source={{ uri: url }}
+  style={styles.webView}
+  onLoadStart={() => setLoading(true)}
+  onLoadEnd={() => setLoading(false)}
+  onError={() => {
+    setError(true);
+    setLoading(false);
+  }}
+  onNavigationStateChange={(navState) => {
+    setCanGoBack(navState.canGoBack);
+    setCanGoForward(navState.canGoForward);
+    setCurrentUrl(navState.url);
+  }}
+  allowsBackForwardNavigationGestures={true}
+  decelerationRate={0.998}
+  showsHorizontalScrollIndicator={false}
+  showsVerticalScrollIndicator={false}
+  startInLoadingState={true}
+  renderLoading={() => (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#3b82f6" />
+      <Text style={styles.loadingText}>Loading {title}...</Text>
+    </View>
+  )}
+
+  /** 👇 Extra props for media + geolocation support */
+  mediaPlaybackRequiresUserAction={false}
+  allowsInlineMediaPlayback={true}
+  javaScriptEnabled={true}
+  domStorageEnabled={true}
+  originWhitelist={['*']}
+  geolocationEnabled={true}  // for location APIs in web
+  allowFileAccess={true}
+  allowUniversalAccessFromFileURLs={true}
+  onPermissionRequest={(event) => {
+    // Automatically grant permissions for camera/mic on Android
+    event.grantPermissions(event.resources);
+  }}
+/>
+
         )}
       </View>
 
