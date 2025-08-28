@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Heart, Globe, MoveVertical as MoreVertical } from 'lucide-react-native';
+import { Heart, MoveVertical as MoreVertical } from 'lucide-react-native';
 import { Website } from '@/types/website';
 import { useTheme } from '@/contexts/ThemeContext';
+
+// Replace this with your own local placeholder icon
+import DefaultIcon from '@/assets/default-icon.png';
 
 interface WebsiteCardProps {
   website: Website;
@@ -23,6 +26,22 @@ interface WebsiteCardProps {
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
+// Helper to normalize favicon URLs
+const getSafeIconUrl = (icon?: string, url?: string) => {
+  if (icon && icon.startsWith('http')) {
+    return icon;
+  }
+  if (url) {
+    try {
+      const domain = new URL(url).origin;
+      return `${domain}/favicon.ico`;
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
 export default function WebsiteCard({ 
   website, 
   onToggleFavorite, 
@@ -31,7 +50,8 @@ export default function WebsiteCard({
   onVisit 
 }: WebsiteCardProps) {
   const { colors } = useTheme();
-  
+  const [imageError, setImageError] = useState(false);
+
   const handlePress = () => {
     onVisit(website.id);
     router.push({
@@ -44,15 +64,12 @@ export default function WebsiteCard({
     });
   };
 
-  const handleLongPress = () => {
-    // Could implement context menu here
-  };
+  const safeIconUrl = getSafeIconUrl(website.icon, website.url);
 
   return (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: colors.surface }]}
       onPress={handlePress}
-      onLongPress={handleLongPress}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
@@ -76,7 +93,15 @@ export default function WebsiteCard({
       </View>
 
       <View style={styles.iconContainer}>
-        <Image source={{ uri: website.icon }} style={styles.websiteIcon} />
+        <Image
+          source={
+            !imageError && safeIconUrl
+              ? { uri: safeIconUrl }
+              : DefaultIcon
+          }
+          style={styles.websiteIcon}
+          onError={() => setImageError(true)}
+        />
       </View>
 
       <Text style={[styles.websiteName, { color: colors.text }]} numberOfLines={2}>
@@ -130,10 +155,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
+    resizeMode: 'cover',
   },
   websiteName: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 4,
     lineHeight: 20,
@@ -151,6 +177,6 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 10,
-    fontWeight: '500' as const,
+    fontWeight: '500',
   },
 });
