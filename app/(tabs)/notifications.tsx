@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, CheckCircle, AlertCircle, Info, Clock } from 'lucide-react-native';
+import { Bell, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, Clock } from 'lucide-react-native';
 
 interface Notification {
   id: string;
