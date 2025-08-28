@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,6 @@ export default function Notifications() {
   const { colors } = useTheme();
   const {
     notifications,
-    loading,
     refreshing,
     refreshNotifications,
     markAsRead,
@@ -36,12 +35,21 @@ export default function Notifications() {
   };
 
   const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
+    if (!timestamp) return "";
+
+    // Fix MySQL format "YYYY-MM-DD HH:mm:ss" → ISO "YYYY-MM-DDTHH:mm:ss"
+    const safeTimestamp = timestamp.replace(" ", "T");
+    const date = new Date(safeTimestamp);
+
+    if (isNaN(date.getTime())) {
+      return ""; // fallback if invalid
+    }
+
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) {
-      return 'Just now';
+      return "Just now";
     } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
     } else {
@@ -52,9 +60,9 @@ export default function Notifications() {
   const renderNotification = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={[
-        styles.notificationItem, 
+        styles.notificationItem,
         { backgroundColor: colors.surface },
-        !item.read && { ...styles.unreadNotification, borderLeftColor: colors.primary }
+        !item.is_read && { ...styles.unreadNotification, borderLeftColor: colors.primary }
       ]}
       onPress={() => markAsRead(item.id)}
     >
@@ -62,24 +70,30 @@ export default function Notifications() {
         {getNotificationIcon(item.type)}
       </View>
       <View style={styles.notificationContent}>
-        <Text style={[
-          styles.notificationTitle, 
-          { color: colors.text },
-          !item.read && styles.unreadTitle
-        ]}>
+        <Text
+          style={[
+            styles.notificationTitle,
+            { color: colors.text },
+            !item.is_read && styles.unreadTitle
+          ]}
+        >
           {item.title}
         </Text>
-        <Text style={[styles.notificationMessage, { color: colors.textSecondary }]}>{item.message}</Text>
+        <Text style={[styles.notificationMessage, { color: colors.textSecondary }]}>
+          {item.message}
+        </Text>
         <View style={styles.notificationFooter}>
           <Clock color={colors.textSecondary} size={14} />
-          <Text style={[styles.notificationTime, { color: colors.textSecondary }]}>{formatTime(item.timestamp)}</Text>
+          <Text style={[styles.notificationTime, { color: colors.textSecondary }]}>
+            {formatTime(item.created_at)}
+          </Text>
         </View>
       </View>
-      {!item.read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
+      {!item.is_read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
     </TouchableOpacity>
   );
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -104,7 +118,7 @@ export default function Notifications() {
         <FlatList
           data={notifications}
           renderItem={renderNotification}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.listContainer}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refreshNotifications} />
@@ -117,9 +131,7 @@ export default function Notifications() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -145,54 +157,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600' as const,
   },
-  listContainer: {
-    padding: 16,
-  },
+  listContainer: { padding: 16 },
   notificationItem: {
     flexDirection: 'row',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  unreadNotification: {
-    borderLeftWidth: 4,
-  },
-  notificationIcon: {
-    marginRight: 12,
-    marginTop: 2,
-  },
-  notificationContent: {
-    flex: 1,
-  },
+  unreadNotification: { borderLeftWidth: 4 },
+  notificationIcon: { marginRight: 12, marginTop: 2 },
+  notificationContent: { flex: 1 },
   notificationTitle: {
     fontSize: 16,
     fontWeight: '500' as const,
     marginBottom: 4,
   },
-  unreadTitle: {
-    fontWeight: '600' as const,
-  },
-  notificationMessage: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  notificationFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  notificationTime: {
-    fontSize: 12,
-    marginLeft: 4,
-  },
+  unreadTitle: { fontWeight: '600' as const },
+  notificationMessage: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  notificationFooter: { flexDirection: 'row', alignItems: 'center' },
+  notificationTime: { fontSize: 12, marginLeft: 4 },
   unreadDot: {
     width: 8,
     height: 8,
