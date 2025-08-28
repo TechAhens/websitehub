@@ -20,7 +20,7 @@ export const PREDEFINED_WEBSITES: Website[] = [
   {
     id: 'cams-attendance',
     name: 'CAMS Attendance',
-    url: 'https://ctoadmin.itiltd.in',
+    url: 'https://ctoadmin.itiltd.in/cams/user',
     isFavorite: false,
     category: 'Attendance',
     dateAdded: new Date().toISOString(),
