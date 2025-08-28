@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600' as const,
+     marginBottom: 2, 
   },
   url: {
     fontSize: 12,
