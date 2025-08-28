@@ -162,7 +162,7 @@ export default function WebViewScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-    <WebView
+  <WebView
   ref={webViewRef}
   source={{ uri: url }}
   style={styles.webView}
@@ -189,18 +189,57 @@ export default function WebViewScreen() {
     </View>
   )}
 
-  /** 👇 Extra props for media + geolocation support */
   mediaPlaybackRequiresUserAction={false}
   allowsInlineMediaPlayback={true}
   javaScriptEnabled={true}
   domStorageEnabled={true}
   originWhitelist={['*']}
-  geolocationEnabled={true}  // for location APIs in web
   allowFileAccess={true}
   allowUniversalAccessFromFileURLs={true}
-  onPermissionRequest={(event) => {
-    // Automatically grant permissions for camera/mic on Android
-    event.grantPermissions(event.resources);
+  geolocationEnabled={true} 
+
+  /** 👇 Inject geolocation polyfill */
+  injectedJavaScript={`
+    (function() {
+      navigator.geolocation.getCurrentPosition = function(success, error) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "getLocation" }));
+        window._geoSuccess = success;
+        window._geoError = error;
+      };
+    })();
+    true;
+  `}
+
+  /** 👇 Listen for messages back from RN */
+  onMessage={async (event) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "getLocation") {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({});
+          webViewRef.current?.injectJavaScript(`
+            if (window._geoSuccess) {
+              window._geoSuccess({
+                coords: {
+                  latitude: ${loc.coords.latitude},
+                  longitude: ${loc.coords.longitude},
+                  accuracy: ${loc.coords.accuracy}
+                }
+              });
+            }
+          `);
+        } else {
+          webViewRef.current?.injectJavaScript(`
+            if (window._geoError) {
+              window._geoError({ code: 1, message: "Permission denied" });
+            }
+          `);
+        }
+      }
+    } catch (e) {
+      console.log("onMessage parse error:", e);
+    }
   }}
 />
 
