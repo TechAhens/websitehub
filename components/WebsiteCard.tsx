@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,22 @@ import {
   Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Heart, MoveVertical as MoreVertical } from 'lucide-react-native';
+import { Heart, MoreVertical } from 'lucide-react-native';
 import { Website } from '@/types/website';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// Replace this with your own local placeholder icon
-import DefaultIcon from '@/assets/default-icon.png';
+// ✅ Helper to safely get a favicon or fallback
+const getWebsiteIcon = (website: Website) => {
+  if (website.icon && website.icon.startsWith('http')) {
+    return website.icon;
+  }
+  try {
+    const urlObj = new URL(website.url);
+    return `https://www.google.com/s2/favicons?sz=64&domain=${urlObj.hostname}`;
+  } catch {
+    return 'https://reactnative.dev/img/tiny_logo.png'; // fallback image
+  }
+};
 
 interface WebsiteCardProps {
   website: Website;
@@ -26,45 +36,26 @@ interface WebsiteCardProps {
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
-// Helper to normalize favicon URLs
-const getSafeIconUrl = (icon?: string, url?: string) => {
-  if (icon && icon.startsWith('http')) {
-    return icon;
-  }
-  if (url) {
-    try {
-      const domain = new URL(url).origin;
-      return `${domain}/favicon.ico`;
-    } catch {
-      return undefined;
-    }
-  }
-  return undefined;
-};
-
-export default function WebsiteCard({ 
-  website, 
-  onToggleFavorite, 
-  onEdit, 
-  onDelete, 
-  onVisit 
+export default function WebsiteCard({
+  website,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+  onVisit,
 }: WebsiteCardProps) {
   const { colors } = useTheme();
-  const [imageError, setImageError] = useState(false);
 
   const handlePress = () => {
     onVisit(website.id);
     router.push({
       pathname: '/webview',
-      params: { 
-        url: website.url, 
+      params: {
+        url: website.url,
         title: website.name,
-        websiteId: website.id 
-      }
+        websiteId: website.id,
+      },
     });
   };
-
-  const safeIconUrl = getSafeIconUrl(website.icon, website.url);
 
   return (
     <TouchableOpacity
@@ -72,6 +63,7 @@ export default function WebsiteCard({
       onPress={handlePress}
       activeOpacity={0.7}
     >
+      {/* Header */}
       <View style={styles.cardHeader}>
         <TouchableOpacity
           style={styles.favoriteButton}
@@ -84,6 +76,7 @@ export default function WebsiteCard({
             fill={website.isFavorite ? '#ef4444' : 'none'}
           />
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.moreButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -92,29 +85,41 @@ export default function WebsiteCard({
         </TouchableOpacity>
       </View>
 
+      {/* Icon */}
       <View style={styles.iconContainer}>
         <Image
-          source={
-            !imageError && safeIconUrl
-              ? { uri: safeIconUrl }
-              : DefaultIcon
-          }
+          source={{ uri: getWebsiteIcon(website) }}
           style={styles.websiteIcon}
-          onError={() => setImageError(true)}
         />
       </View>
 
-      <Text style={[styles.websiteName, { color: colors.text }]} numberOfLines={2}>
+      {/* Name */}
+      <Text
+        style={[styles.websiteName, { color: colors.text }]}
+        numberOfLines={2}
+      >
         {website.name}
       </Text>
-      
-      <Text style={[styles.websiteUrl, { color: colors.textSecondary }]} numberOfLines={1}>
+
+      {/* URL */}
+      <Text
+        style={[styles.websiteUrl, { color: colors.textSecondary }]}
+        numberOfLines={1}
+      >
         {website.url.replace(/^https?:\/\//, '')}
       </Text>
 
+      {/* Category Badge */}
       {website.category && (
-        <View style={[styles.categoryBadge, { backgroundColor: `${colors.primary}15` }]}>
-          <Text style={[styles.categoryText, { color: colors.primary }]}>{website.category}</Text>
+        <View
+          style={[
+            styles.categoryBadge,
+            { backgroundColor: `${colors.primary}15` },
+          ]}
+        >
+          <Text style={[styles.categoryText, { color: colors.primary }]}>
+            {website.category}
+          </Text>
         </View>
       )}
     </TouchableOpacity>
@@ -128,10 +133,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -141,12 +143,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  favoriteButton: {
-    padding: 4,
-  },
-  moreButton: {
-    padding: 4,
-  },
+  favoriteButton: { padding: 4 },
+  moreButton: { padding: 4 },
   iconContainer: {
     alignItems: 'center',
     marginBottom: 12,
@@ -155,7 +153,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    resizeMode: 'cover',
   },
   websiteName: {
     fontSize: 16,
