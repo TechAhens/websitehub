@@ -12,10 +12,12 @@ import { Heart, MoreVertical } from 'lucide-react-native';
 import { Website } from '@/types/website';
 import { useTheme } from '@/contexts/ThemeContext';
 
+// ✅ Preload all static images
 const localIcons: Record<string, any> = {
-  eoffice: require('../assets/images/eoffice.jpg'),
-  cams: require('../assets/images/cams.jpg'),
-  website: require('../assets/images/website.jpg'), // default fallback
+  eoffice: require('../../assets/images/eoffice.jpg'),
+  cams: require('../../assets/images/cams.jpg'),
+  website: require('../../assets/images/website.jpg'), // default fallback
+  // Add other preloaded images if needed
 };
 
 
