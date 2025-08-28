@@ -1,7 +1,7 @@
 // ApiService.ts
 import { ApiWebsite, ApiNotification } from '@/types/website';
 
-const API_BASE_URL = "http://YOUR_SERVER/iti_api"; // Replace with your server path
+const API_BASE_URL = "http://eoffice.itiltd.in/api"; // Replace with your server path
 
 export const ApiService = {
   async fetchWebsites(): Promise<ApiWebsite[]> {
