@@ -20,7 +20,6 @@ const localIcons: Record<string, any> = {
   // Add other preloaded images if needed
 };
 
-
 // ✅ Helper to safely get a favicon or fallback
 const getWebsiteIcon = (website: Website) => {
   // 1️⃣ Use HTTP icon if provided
