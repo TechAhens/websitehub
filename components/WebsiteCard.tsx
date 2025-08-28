@@ -12,35 +12,16 @@ import { Heart, MoreVertical } from 'lucide-react-native';
 import { Website } from '@/types/website';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// ✅ Preload all static images
-const localIcons: Record<string, any> = {
-  eoffice: require('../../assets/images/eoffice.jpg'),
-  cams: require('../../assets/images/cams.jpg'),
-  website: require('../../assets/images/website.jpg'), // default fallback
-  // Add other preloaded images if needed
-};
-
-
 // ✅ Helper to safely get a favicon or fallback
 const getWebsiteIcon = (website: Website) => {
-  // 1️⃣ Use HTTP icon if provided
   if (website.icon && website.icon.startsWith('http')) {
-    return { uri: website.icon };
+    return website.icon;
   }
-
-  // 2️⃣ Special local images
-  const key = website.name.toLowerCase().replace(/\s+/g, '');
-  if (localIcons[key]) {
-    return localIcons[key];
-  }
-
-  // 3️⃣ Try Google favicon as fallback
   try {
     const urlObj = new URL(website.url);
-    return { uri: `https://www.google.com/s2/favicons?sz=64&domain=${urlObj.hostname}` };
+    return `https://www.google.com/s2/favicons?sz=64&domain=${urlObj.hostname}`;
   } catch {
-    // 4️⃣ Default fallback image
-    return localIcons.website;
+    return 'https://reactnative.dev/img/tiny_logo.png'; // fallback image
   }
 };
 
@@ -107,7 +88,7 @@ export default function WebsiteCard({
       {/* Icon */}
       <View style={styles.iconContainer}>
         <Image
-          source={getWebsiteIcon(website)}
+          source={{ uri: getWebsiteIcon(website) }}
           style={styles.websiteIcon}
         />
       </View>
@@ -195,4 +176,4 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
   },
-});
+}); 
