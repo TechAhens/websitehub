@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow ITI App to access your camera",
+        "NSLocationWhenInUseUsageDescription": "Allow ITI App to access your location while using the app"
+      }
     },
     "android": {
       "permissions": [
