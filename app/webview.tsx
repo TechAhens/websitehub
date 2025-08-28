@@ -35,6 +35,22 @@ export default function WebViewScreen() {
   const [canGoForward, setCanGoForward] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(url);
 
+  useEffect(() => {
+    (async () => {
+      const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
+      if (cameraStatus !== 'granted') {
+        Alert.alert('Camera permission denied', 'This page may not work properly without it.');
+      }
+
+      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
+      if (locationStatus !== 'granted') {
+        Alert.alert('Location permission denied', 'This page may not work properly without it.');
+      }
+    })();
+  }, []);
+
+
+  
   const handleRefresh = () => {
     webViewRef.current?.reload();
     setError(false);
