@@ -13,8 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWebsites } from '@/hooks/useWebsites';
 import WebsiteCard from '@/components/WebsiteCard';
 import SearchBar from '@/components/SearchBar';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Dashboard() {
+  const { colors } = useTheme();
   const {
     websites,
     loading,
@@ -62,16 +64,16 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading websites...</Text>
+      <SafeAreaView style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading ITI services...</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>ITI App</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.title, { color: colors.text }]}>ITI App</Text>
       </View>
 
       <SearchBar
@@ -88,7 +90,7 @@ export default function Dashboard() {
       >
         {recentWebsites.length > 0 && !searchQuery && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recently Visited</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recently Visited</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -110,16 +112,16 @@ export default function Dashboard() {
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {searchQuery ? 'Search Results' : 'ITI Services'}
           </Text>
           
           {filteredWebsites.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 {searchQuery ? 'No services found' : 'Loading ITI services...'}
               </Text>
-              <Text style={styles.emptyDescription}>
+              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
                 {searchQuery 
                   ? 'Try adjusting your search terms' 
                   : 'Please wait while we load your ITI services'
@@ -146,29 +148,23 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
   },
   loadingText: {
     fontSize: 16,
-    color: '#6b7280',
   },
   header: {
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '700' as const,
   },
   content: {
     flex: 1,
@@ -179,8 +175,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '600' as const,
     marginBottom: 16,
   },
   recentList: {
@@ -201,13 +196,11 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: '600' as const,
     marginBottom: 8,
   },
   emptyDescription: {
     fontSize: 16,
-    color: '#6b7280',
     textAlign: 'center',
     marginBottom: 24,
   },

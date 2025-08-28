@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Website } from '@/types/website';
 import { PREDEFINED_WEBSITES } from './predefinedWebsites';
+import { ApiService } from './apiService';
 
 const WEBSITES_KEY = 'websites';
 const INITIALIZED_KEY = 'app_initialized';
@@ -14,14 +15,69 @@ export const StorageUtils = {
         await this.initializeWithPredefinedWebsites();
       }
       
-      const stored = await AsyncStorage.getItem(WEBSITES_KEY);
-      return stored ? JSON.parse(stored) : [];
+      // Try to fetch updated websites from API
+      try {
+        const apiWebsites = await ApiService.fetchWebsites();
+        if (apiWebsites.length > 0) {
+          // Merge API websites with local data
+          const localWebsites = await this.getLocalWebsites();
+          const mergedWebsites = this.mergeWebsites(localWebsites, apiWebsites);
+          await this.saveWebsites(mergedWebsites);
+          return mergedWebsites;
+        }
+      } catch (error) {
+        console.log('API not available, using local data');
+      }
+      
+      return await this.getLocalWebsites();
     } catch (error) {
       console.error('Error loading websites:', error);
       return [];
     }
   },
 
+  async getLocalWebsites(): Promise<Website[]> {
+    try {
+      const stored = await AsyncStorage.getItem(WEBSITES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Error loading local websites:', error);
+      return [];
+    }
+  },
+
+  mergeWebsites(localWebsites: Website[], apiWebsites: any[]): Website[] {
+    const merged = [...localWebsites];
+    
+    apiWebsites.forEach(apiWebsite => {
+      const existingIndex = merged.findIndex(w => w.id === apiWebsite.id);
+      if (existingIndex >= 0) {
+        // Update existing website with API data
+        merged[existingIndex] = {
+          ...merged[existingIndex],
+          name: apiWebsite.name,
+          url: apiWebsite.url,
+          icon: apiWebsite.icon,
+          category: apiWebsite.category,
+          hasAutoLogin: apiWebsite.hasAutoLogin,
+        };
+      } else {
+        // Add new website from API
+        merged.push({
+          id: apiWebsite.id,
+          name: apiWebsite.name,
+          url: this.formatUrl(apiWebsite.url),
+          icon: apiWebsite.icon,
+          isFavorite: false,
+          category: apiWebsite.category,
+          dateAdded: new Date().toISOString(),
+          hasAutoLogin: apiWebsite.hasAutoLogin,
+        });
+      }
+    });
+    
+    return merged;
+  },
   async initializeWithPredefinedWebsites(): Promise<void> {
     try {
       await AsyncStorage.setItem(WEBSITES_KEY, JSON.stringify(PREDEFINED_WEBSITES));

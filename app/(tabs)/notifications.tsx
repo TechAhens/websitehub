@@ -9,60 +9,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Info, Clock } from 'lucide-react-native';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: string;
-  read: boolean;
-}
+import { useNotifications } from '@/hooks/useNotifications';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Notifications() {
-  const [refreshing, setRefreshing] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Welcome to ITI App',
-      message: 'Access all your ITI services from one convenient location.',
-      type: 'info',
-      timestamp: new Date().toISOString(),
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'E Office Available',
-      message: 'Digital workplace services are now accessible through the app.',
-      type: 'success',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      read: true,
-    },
-    {
-      id: '3',
-      title: 'SARAL ESS Updated',
-      message: 'HR services have been updated with new features.',
-      type: 'info',
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      read: true,
-    },
-  ]);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate refresh delay
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
+  const { colors } = useTheme();
+  const {
+    notifications,
+    loading,
+    refreshing,
+    refreshNotifications,
+    markAsRead,
+  } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -73,7 +31,7 @@ export default function Notifications() {
       case 'error':
         return <AlertCircle color="#ef4444" size={24} />;
       default:
-        return <Info color="#3b82f6" size={24} />;
+        return <Info color={colors.primary} size={24} />;
     }
   };
 
@@ -91,34 +49,42 @@ export default function Notifications() {
     }
   };
 
-  const renderNotification = ({ item }: { item: Notification }) => (
+  const renderNotification = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={[styles.notificationItem, !item.read && styles.unreadNotification]}
+      style={[
+        styles.notificationItem, 
+        { backgroundColor: colors.surface },
+        !item.read && { ...styles.unreadNotification, borderLeftColor: colors.primary }
+      ]}
       onPress={() => markAsRead(item.id)}
     >
       <View style={styles.notificationIcon}>
         {getNotificationIcon(item.type)}
       </View>
       <View style={styles.notificationContent}>
-        <Text style={[styles.notificationTitle, !item.read && styles.unreadTitle]}>
+        <Text style={[
+          styles.notificationTitle, 
+          { color: colors.text },
+          !item.read && styles.unreadTitle
+        ]}>
           {item.title}
         </Text>
-        <Text style={styles.notificationMessage}>{item.message}</Text>
+        <Text style={[styles.notificationMessage, { color: colors.textSecondary }]}>{item.message}</Text>
         <View style={styles.notificationFooter}>
-          <Clock color="#6b7280" size={14} />
-          <Text style={styles.notificationTime}>{formatTime(item.timestamp)}</Text>
+          <Clock color={colors.textSecondary} size={14} />
+          <Text style={[styles.notificationTime, { color: colors.textSecondary }]}>{formatTime(item.timestamp)}</Text>
         </View>
       </View>
-      {!item.read && <View style={styles.unreadDot} />}
+      {!item.read && <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />}
     </TouchableOpacity>
   );
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Notifications</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
         {unreadCount > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{unreadCount}</Text>
@@ -128,9 +94,9 @@ export default function Notifications() {
 
       {notifications.length === 0 ? (
         <View style={styles.emptyState}>
-          <Bell color="#6b7280" size={48} />
-          <Text style={styles.emptyTitle}>No notifications</Text>
-          <Text style={styles.emptyDescription}>
+          <Bell color={colors.textSecondary} size={48} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No notifications</Text>
+          <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
             You'll see important updates and announcements here.
           </Text>
         </View>
@@ -141,7 +107,7 @@ export default function Notifications() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={refreshNotifications} />
           }
           showsVerticalScrollIndicator={false}
         />
@@ -153,7 +119,6 @@ export default function Notifications() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   header: {
     flexDirection: 'row',
@@ -161,14 +126,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '700' as const,
   },
   badge: {
     backgroundColor: '#ef4444',
@@ -181,14 +143,13 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   listContainer: {
     padding: 16,
   },
   notificationItem: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -203,7 +164,6 @@ const styles = StyleSheet.create({
   },
   unreadNotification: {
     borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
   },
   notificationIcon: {
     marginRight: 12,
@@ -214,16 +174,14 @@ const styles = StyleSheet.create({
   },
   notificationTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
+    fontWeight: '500' as const,
     marginBottom: 4,
   },
   unreadTitle: {
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   notificationMessage: {
     fontSize: 14,
-    color: '#6b7280',
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -233,14 +191,12 @@ const styles = StyleSheet.create({
   },
   notificationTime: {
     fontSize: 12,
-    color: '#9ca3af',
     marginLeft: 4,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#3b82f6',
     marginLeft: 8,
     marginTop: 8,
   },
@@ -252,14 +208,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: '600' as const,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDescription: {
     fontSize: 16,
-    color: '#6b7280',
     textAlign: 'center',
     lineHeight: 24,
   },

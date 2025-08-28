@@ -10,6 +10,7 @@ import {
 import { router } from 'expo-router';
 import { Heart, Globe, MoveVertical as MoreVertical } from 'lucide-react-native';
 import { Website } from '@/types/website';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WebsiteCardProps {
   website: Website;
@@ -29,6 +30,8 @@ export default function WebsiteCard({
   onDelete, 
   onVisit 
 }: WebsiteCardProps) {
+  const { colors } = useTheme();
+  
   const handlePress = () => {
     onVisit(website.id);
     router.push({
@@ -47,7 +50,7 @@ export default function WebsiteCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.surface }]}
       onPress={handlePress}
       onLongPress={handleLongPress}
       activeOpacity={0.7}
@@ -68,31 +71,25 @@ export default function WebsiteCard({
           style={styles.moreButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <MoreVertical color="#6b7280" size={20} />
+          <MoreVertical color={colors.textSecondary} size={20} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.iconContainer}>
-        {website.icon ? (
-          <Image source={{ uri: website.icon }} style={styles.websiteIcon} />
-        ) : (
-          <View style={styles.defaultIcon}>
-            <Globe color="#3b82f6" size={32} />
-          </View>
-        )}
+        <Image source={{ uri: website.icon }} style={styles.websiteIcon} />
       </View>
 
-      <Text style={styles.websiteName} numberOfLines={2}>
+      <Text style={[styles.websiteName, { color: colors.text }]} numberOfLines={2}>
         {website.name}
       </Text>
       
-      <Text style={styles.websiteUrl} numberOfLines={1}>
+      <Text style={[styles.websiteUrl, { color: colors.textSecondary }]} numberOfLines={1}>
         {website.url.replace(/^https?:\/\//, '')}
       </Text>
 
       {website.category && (
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{website.category}</Text>
+        <View style={[styles.categoryBadge, { backgroundColor: `${colors.primary}15` }]}>
+          <Text style={[styles.categoryText, { color: colors.primary }]}>{website.category}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -102,7 +99,6 @@ export default function WebsiteCard({
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -135,30 +131,19 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
   },
-  defaultIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   websiteName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '600' as const,
     textAlign: 'center',
     marginBottom: 4,
     lineHeight: 20,
   },
   websiteUrl: {
     fontSize: 12,
-    color: '#6b7280',
     textAlign: 'center',
     marginBottom: 8,
   },
   categoryBadge: {
-    backgroundColor: '#eff6ff',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -166,7 +151,6 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 10,
-    color: '#3b82f6',
-    fontWeight: '500',
+    fontWeight: '500' as const,
   },
 });
