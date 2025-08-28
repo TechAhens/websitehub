@@ -363,4 +363,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500' as const,
   },
+  retryButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 20,
+  paddingVertical: 12,
+  borderRadius: 24,
+  backgroundColor: '#3b82f6', // 👈 add this
+},
+
 });
