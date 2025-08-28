@@ -197,11 +197,12 @@ const styles = StyleSheet.create({
   titleContainer: {
     flex: 1,
     marginHorizontal: 16,
+     marginTop: 4, 
   },
   title: {
     fontSize: 16,
     fontWeight: '600' as const,
-     marginBottom: 2, 
+    
   },
   url: {
     fontSize: 12,
