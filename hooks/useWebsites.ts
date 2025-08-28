@@ -25,17 +25,6 @@ export function useWebsites() {
     setRefreshing(false);
   }, [loadWebsites]);
 
-  const addWebsite = useCallback(async (websiteData: { name: string; url: string; category?: string }) => {
-    try {
-      const newWebsite = await StorageUtils.addWebsite(websiteData);
-      setWebsites(prev => [...prev, newWebsite]);
-      return newWebsite;
-    } catch (error) {
-      console.error('Failed to add website:', error);
-      throw error;
-    }
-  }, []);
-
   const updateWebsite = useCallback(async (id: string, updates: Partial<Website>) => {
     try {
       await StorageUtils.updateWebsite(id, updates);
@@ -88,7 +77,6 @@ export function useWebsites() {
     loading,
     refreshing,
     refreshWebsites,
-    addWebsite,
     updateWebsite,
     deleteWebsite,
     toggleFavorite,

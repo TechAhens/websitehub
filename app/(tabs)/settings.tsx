@@ -59,8 +59,8 @@ export default function Settings() {
 
   const handleAbout = () => {
     Alert.alert(
-      'About Website Hub',
-      'Website Hub v1.0.0\n\nA centralized dashboard for accessing your favorite websites through embedded web views.\n\nBuilt with React Native and Expo.',
+      'About ITI App',
+      'ITI App v1.0.0\n\nA centralized dashboard for accessing ITI services through embedded web views.\n\nBuilt for ITI employees to access all company services in one place.',
       [{ text: 'OK' }]
     );
   };
@@ -156,7 +156,7 @@ export default function Settings() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Website Hub helps you access all your favorite websites in one place.
+            ITI App helps you access all ITI services in one convenient location.
           </Text>
         </View>
       </ScrollView>

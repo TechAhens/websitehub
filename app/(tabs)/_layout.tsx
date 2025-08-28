@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Heart, Settings } from 'lucide-react-native';
+import { Chrome as Home, Heart, Settings, Bell } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -38,6 +38,15 @@ export default function TabLayout() {
           title: 'Favorites',
           tabBarIcon: ({ color, size }) => (
             <Heart color={color} size={size} strokeWidth={2} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          tabBarIcon: ({ color, size }) => (
+            <Bell color={color} size={size} strokeWidth={2} />
           ),
         }}
       />

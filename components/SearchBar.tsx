@@ -11,7 +11,7 @@ interface SearchBarProps {
 export default function SearchBar({ 
   value, 
   onChangeText, 
-  placeholder = 'Search websites...' 
+  placeholder = 'Search ITI services...' 
 }: SearchBarProps) {
   return (
     <View style={styles.container}>

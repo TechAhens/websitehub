@@ -10,10 +10,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus } from 'lucide-react-native';
 import { useWebsites } from '@/hooks/useWebsites';
 import WebsiteCard from '@/components/WebsiteCard';
-import AddWebsiteModal from '@/components/AddWebsiteModal';
 import SearchBar from '@/components/SearchBar';
 
 export default function Dashboard() {
@@ -22,14 +20,12 @@ export default function Dashboard() {
     loading,
     refreshing,
     refreshWebsites,
-    addWebsite,
     updateWebsite,
     deleteWebsite,
     toggleFavorite,
     markVisited,
   } = useWebsites();
 
-  const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredWebsites = useMemo(() => {
@@ -75,13 +71,7 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Website Hub</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setShowAddModal(true)}
-        >
-          <Plus color="#ffffff" size={24} />
-        </TouchableOpacity>
+        <Text style={styles.title}>ITI App</Text>
       </View>
 
       <SearchBar
@@ -121,29 +111,20 @@ export default function Dashboard() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {searchQuery ? 'Search Results' : 'All Websites'}
+            {searchQuery ? 'Search Results' : 'ITI Services'}
           </Text>
           
           {filteredWebsites.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>
-                {searchQuery ? 'No websites found' : 'No websites added yet'}
+                {searchQuery ? 'No services found' : 'Loading ITI services...'}
               </Text>
               <Text style={styles.emptyDescription}>
                 {searchQuery 
                   ? 'Try adjusting your search terms' 
-                  : 'Add your first website to get started'
+                  : 'Please wait while we load your ITI services'
                 }
               </Text>
-              {!searchQuery && (
-                <TouchableOpacity
-                  style={styles.emptyButton}
-                  onPress={() => setShowAddModal(true)}
-                >
-                  <Plus color="#3b82f6" size={20} />
-                  <Text style={styles.emptyButtonText}>Add Website</Text>
-                </TouchableOpacity>
-              )}
             </View>
           ) : (
             <FlatList
@@ -158,12 +139,6 @@ export default function Dashboard() {
           )}
         </View>
       </ScrollView>
-
-      <AddWebsiteModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={addWebsite}
-      />
     </SafeAreaView>
   );
 }
@@ -184,9 +159,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 16,
     backgroundColor: '#ffffff',
@@ -197,22 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: '#111827',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#3b82f6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   content: {
     flex: 1,
@@ -254,19 +210,5 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 24,
-  },
-  emptyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  emptyButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '500',
   },
 });
