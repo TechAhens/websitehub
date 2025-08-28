@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight 
 } from 'lucide-react-native';
-import * as Camera from 'expo-camera';
+import { Camera } from 'expo-camera';
 import * as Location from 'expo-location';
 // Polyfill for navigator.geolocation inside WebView
 const injectedJS = `
